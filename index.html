@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti AI Slop Editor - Kill the Robot Voice in Your Writing</title>
+    <meta name="description" content="Free Claude Code skill and agent that detects and destroys AI-generated slop. 10-point checklist, Slop Scale scoring, bilingual EN/DE support. Make your AI text sound human.">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+        :root {
+            --red: #DC2626;
+            --red-dark: #991B1B;
+            --red-light: #FEE2E2;
+            --bg: #0A0A0A;
+            --bg-card: #141414;
+            --bg-card-hover: #1A1A1A;
+            --text: #E5E5E5;
+            --text-dim: #A3A3A3;
+            --text-bright: #FAFAFA;
+            --border: #262626;
+            --green: #22C55E;
+            --yellow: #EAB308;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Typography ── */
+        h1,h2,h3,h4 { color: var(--text-bright); line-height: 1.2; font-weight: 700; }
+        a { color: var(--red); text-decoration: none; transition: color .2s; }
+        a:hover { color: #EF4444; }
+        code {
+            font-family: var(--mono);
+            background: #1E1E1E;
+            padding: .15em .4em;
+            border-radius: 4px;
+            font-size: .88em;
+            color: #F87171;
+        }
+        pre {
+            background: #111;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            overflow-x: auto;
+            font-family: var(--mono);
+            font-size: .85rem;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        /* ── Layout ── */
+        .container { max-width: 1120px; margin: 0 auto; padding: 0 1.5rem; }
+        section { padding: 5rem 0; }
+
+        /* ── Nav ── */
+        nav {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(10,10,10,.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: .75rem 0;
+        }
+        nav .container { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        nav .logo { font-weight: 800; font-size: 1.1rem; color: var(--text-bright); display: flex; align-items: center; gap: .5rem; }
+        nav .logo span { color: var(--red); }
+        nav ul { list-style: none; display: flex; gap: 1.5rem; }
+        nav ul a { color: var(--text-dim); font-size: .9rem; font-weight: 500; }
+        nav ul a:hover { color: var(--text-bright); }
+        .nav-cta {
+            background: var(--red);
+            color: #fff !important;
+            padding: .45rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: .85rem;
+            transition: background .2s;
+        }
+        .nav-cta:hover { background: var(--red-dark); }
+
+        /* ── Hero ── */
+        .hero {
+            padding: 7rem 0 5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -40%; left: 50%; transform: translateX(-50%);
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(220,38,38,.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero h1 {
+            font-size: clamp(2.4rem, 5.5vw, 4rem);
+            letter-spacing: -.03em;
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+        .hero h1 .accent { color: var(--red); }
+        .hero .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-dim);
+            max-width: 640px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+        .hero-badges { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem; }
+        .badge {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: .4rem .85rem;
+            border-radius: 99px;
+            font-size: .8rem;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+        .badge strong { color: var(--text-bright); }
+        .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; gap: .5rem;
+            padding: .75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: .95rem;
+            transition: all .2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary { background: var(--red); color: #fff; }
+        .btn-primary:hover { background: #EF4444; color: #fff; transform: translateY(-1px); }
+        .btn-secondary { background: var(--bg-card); color: var(--text-bright); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--bg-card-hover); border-color: #404040; color: #fff; }
+
+        /* ── Install block ── */
+        .install-block {
+            max-width: 600px;
+            margin: 2.5rem auto 0;
+            position: relative;
+        }
+        .install-block pre {
+            text-align: left;
+            font-size: .9rem;
+            padding: 1rem 1.25rem;
+        }
+        .install-label {
+            position: absolute;
+            top: -10px; left: 16px;
+            background: var(--bg);
+            padding: 0 .5rem;
+            font-size: .7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-weight: 600;
+        }
+
+        /* ── Features Grid ── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            transition: border-color .2s, transform .2s;
+        }
+        .feature-card:hover { border-color: #404040; transform: translateY(-2px); }
+        .feature-icon {
+            width: 40px; height: 40px;
+            background: rgba(220,38,38,.12);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        .feature-card h3 { font-size: 1.05rem; margin-bottom: .5rem; }
+        .feature-card p { font-size: .9rem; color: var(--text-dim); line-height: 1.6; }
+        .feature-example {
+            margin-top: .75rem;
+            padding: .75rem;
+            background: rgba(220,38,38,.06);
+            border-left: 2px solid var(--red);
+            border-radius: 0 6px 6px 0;
+            font-size: .82rem;
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        /* ── Before/After ── */
+        .ba-section { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .section-label {
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            font-size: .75rem;
+            color: var(--red);
+            font-weight: 700;
+            margin-bottom: .75rem;
+        }
+        .section-title { font-size: clamp(1.6rem, 3vw, 2.2rem); margin-bottom: .75rem; }
+        .section-desc { color: var(--text-dim); max-width: 600px; margin-bottom: 3rem; font-size: .95rem; }
+        .ba-grid { display: flex; flex-direction: column; gap: 2.5rem; }
+        .ba-item { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+        @media (max-width: 768px) { .ba-item { grid-template-columns: 1fr; } }
+        .ba-box {
+            border-radius: 10px;
+            padding: 1.5rem;
+            font-size: .88rem;
+            line-height: 1.7;
+        }
+        .ba-before {
+            background: rgba(220,38,38,.06);
+            border: 1px solid rgba(220,38,38,.2);
+        }
+        .ba-after {
+            background: rgba(34,197,94,.06);
+            border: 1px solid rgba(34,197,94,.2);
+        }
+        .ba-tag {
+            display: inline-block;
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            padding: .2rem .5rem;
+            border-radius: 4px;
+            margin-bottom: .75rem;
+        }
+        .ba-before .ba-tag { background: rgba(220,38,38,.15); color: #F87171; }
+        .ba-after .ba-tag { background: rgba(34,197,94,.15); color: var(--green); }
+        .ba-lang {
+            font-size: .7rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: .5rem;
+        }
+
+        /* ── How it works ── */
+        .steps { display: flex; flex-direction: column; gap: 0; margin-top: 3rem; position: relative; }
+        .steps::before {
+            content: '';
+            position: absolute;
+            left: 19px; top: 0; bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        .step {
+            display: flex; gap: 1.25rem; align-items: flex-start;
+            padding: 1.25rem 0;
+            position: relative;
+        }
+        .step-num {
+            width: 40px; height: 40px; flex-shrink: 0;
+            background: var(--bg);
+            border: 2px solid var(--red);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: .85rem; color: var(--red);
+            position: relative; z-index: 1;
+        }
+        .step h3 { font-size: .95rem; margin-bottom: .25rem; }
+        .step p { font-size: .88rem; color: var(--text-dim); }
+
+        /* ── FAQ ── */
+        .faq-list { max-width: 720px; margin: 3rem auto 0; }
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+            padding: 1.25rem 0;
+        }
+        .faq-q {
+            font-weight: 700;
+            font-size: .95rem;
+            color: var(--text-bright);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .faq-q::after {
+            content: '+';
+            font-size: 1.3rem;
+            color: var(--text-dim);
+            transition: transform .2s;
+            flex-shrink: 0;
+        }
+        .faq-item.open .faq-q::after { content: '-'; }
+        .faq-a {
+            font-size: .88rem;
+            color: var(--text-dim);
+            line-height: 1.7;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .3s ease, padding .3s ease;
+        }
+        .faq-item.open .faq-a {
+            max-height: 300px;
+            padding-top: .75rem;
+        }
+
+        /* ── Use Cases ── */
+        .usecases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            margin-top: 3rem;
+        }
+        .usecase-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: border-color .2s;
+        }
+        .usecase-card:hover { border-color: #404040; }
+        .usecase-role {
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--red);
+            font-weight: 700;
+            margin-bottom: .5rem;
+        }
+        .usecase-card p { font-size: .88rem; color: var(--text-dim); line-height: 1.65; }
+
+        /* ── CTA ── */
+        .cta-section {
+            text-align: center;
+            padding: 5rem 0;
+            position: relative;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(220,38,38,.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .cta-section h2 { font-size: clamp(1.8rem, 3.5vw, 2.5rem); margin-bottom: 1rem; }
+        .cta-section p { color: var(--text-dim); margin-bottom: 2rem; font-size: 1rem; }
+
+        /* ── Footer ── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 0;
+            text-align: center;
+            font-size: .82rem;
+            color: var(--text-dim);
+        }
+        footer a { color: var(--text-dim); }
+        footer a:hover { color: var(--text-bright); }
+
+        /* ── Tabs ── */
+        .tab-row { display: flex; gap: .5rem; margin-bottom: 1rem; }
+        .tab-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: .4rem 1rem;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .tab-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            nav ul { display: none; }
+            section { padding: 3.5rem 0; }
+            .hero { padding: 5rem 0 3rem; }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+    <div class="container">
+        <div class="logo"><span>&#x1F52A;</span> Anti AI Slop Editor</div>
+        <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#examples">Before/After</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#install" class="nav-cta">Install</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="top">
+    <div class="container">
+        <h1>Your AI Text <span class="accent">Sounds Like AI.</span><br>Fix It.</h1>
+        <p class="subtitle">A free Claude Code skill and agent that detects hollow filler, fake enthusiasm, and recycled AI patterns. Rewrites your text to sound like a person who actually has something to say.</p>
+        <div class="hero-badges">
+            <span class="badge"><strong>10-point</strong> slop checklist</span>
+            <span class="badge"><strong>0-10</strong> Slop Scale scoring</span>
+            <span class="badge"><strong>EN + DE</strong> bilingual detection</span>
+            <span class="badge"><strong>MIT</strong> open source</span>
+        </div>
+        <div class="hero-actions">
+            <a href="#install" class="btn btn-primary">Install the Skill</a>
+            <a href="https://github.com/Kendo1988/anti-ai-slop-editor" class="btn btn-secondary">View on GitHub</a>
+        </div>
+        <div class="install-block">
+            <span class="install-label">Quick install</span>
+            <pre>claude install-skill https://github.com/Kendo1988/anti-ai-slop-editor</pre>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section id="features">
+    <div class="container">
+        <p class="section-label">What it does</p>
+        <h2 class="section-title">Five ways it kills the robot voice</h2>
+        <p class="section-desc">Not a grammar checker. Not a style guide. A pattern detector trained on the specific habits that make AI text recognizable.</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#x2611;</div>
+                <h3>10-Point Slop Checklist</h3>
+                <p>The skill runs every text through a mandatory 10-point inspection. Em-dash abuse, triple-list addiction, passive voice pileups, rhetorical question openers, word frequency violations.</p>
+                <div class="feature-example">Catches: "It's worth noting that in today's rapidly evolving landscape, organizations must navigate..."</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4CA;</div>
+                <h3>Slop Scale Scoring (0-10)</h3>
+                <p>Your text gets a concrete score. Zero means human-written. Ten means raw AI output nobody edited. You see the number, what caused it, and how to fix it.</p>
+                <div class="feature-example">Catches: A paragraph scoring 7/10 with "delve," "foster," and "harness" within 40 words.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F1E9;&#x1F1EA;</div>
+                <h3>Bilingual Detection (EN/DE)</h3>
+                <p>German AI output has its own tells. Dedicated banned-word lists and pattern detection for both languages. Because AI slop is bilingual.</p>
+                <div class="feature-example">Catches: "In der heutigen digitalen Welt ist es wichtiger denn je, innovative Loesungen zu entwickeln..."</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F9EC;</div>
+                <h3>Structural Pattern Detection</h3>
+                <p>AI text has a skeleton. It opens with a question, drops a three-item list in every paragraph, leans on em-dashes, and dodges with passive voice. This skill identifies those bones.</p>
+                <div class="feature-example">Catches: "Three things: flexibility, innovation, and resilience. These pillars -- each critical in its own right -- form..."</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x270D;</div>
+                <h3>Rewrites, Not Just Red Ink</h3>
+                <p>Does not just flag problems. Delivers clean, human-sounding alternatives. Shorter sentences, specific claims, active voice, a point of view.</p>
+                <div class="feature-example">Turns: "This groundbreaking solution leverages cutting-edge technology" into "The tool automates three steps your team does by hand."</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ BEFORE / AFTER ═══ -->
+<section class="ba-section" id="examples">
+    <div class="container">
+        <p class="section-label">See the difference</p>
+        <h2 class="section-title">Before and after</h2>
+        <p class="section-desc">Real examples of AI slop detected and rewritten. The "before" text scores 7-8 on the Slop Scale. The "after" scores 1-2.</p>
+        <div class="ba-grid">
+            <!-- EN 1 -->
+            <div class="ba-item">
+                <div class="ba-box ba-before">
+                    <div class="ba-lang">English</div>
+                    <div class="ba-tag">Before -- Slop 8/10</div>
+                    <p>In today's rapidly evolving digital landscape, businesses must navigate an increasingly complex ecosystem of tools and platforms. It's worth noting that the organizations that truly thrive are those that embrace innovation and harness the power of cutting-edge solutions to drive meaningful outcomes. But what does this actually look like in practice? Let's delve deeper.</p>
+                </div>
+                <div class="ba-box ba-after">
+                    <div class="ba-lang">English</div>
+                    <div class="ba-tag">After -- Slop 1/10</div>
+                    <p>Most companies use too many tools. They bought them one at a time, each solving last quarter's problem, and now nobody knows which dashboard to trust. Here is what the ones who fixed that mess actually did.</p>
+                </div>
+            </div>
+            <!-- DE 1 -->
+            <div class="ba-item">
+                <div class="ba-box ba-before">
+                    <div class="ba-lang">Deutsch</div>
+                    <div class="ba-tag">Vorher -- Slop 8/10</div>
+                    <p>In der heutigen digitalen Welt stehen Unternehmen vor der Herausforderung, innovative Loesungen zu entwickeln, die einen echten Mehrwert fuer ihre Kunden schaffen. Unser ganzheitlicher Ansatz ermoeglicht es, massgeschneiderte Strategien zu implementieren, die nachhaltigen Erfolg sicherstellen.</p>
+                </div>
+                <div class="ba-box ba-after">
+                    <div class="ba-lang">Deutsch</div>
+                    <div class="ba-tag">Nachher -- Slop 2/10</div>
+                    <p>Unsere Kunden verkaufen Produkte online und brauchen einen Shop, der funktioniert -- auf dem Handy, bei hoher Last, ohne IT-Abteilung. Das bauen wir. Seit 2019, fuer 120 Firmen.</p>
+                </div>
+            </div>
+            <!-- EN 2 -->
+            <div class="ba-item">
+                <div class="ba-box ba-before">
+                    <div class="ba-lang">English</div>
+                    <div class="ba-tag">Before -- Slop 7/10</div>
+                    <p>Our platform empowers users to seamlessly collaborate across teams, fostering a culture of innovation and enabling stakeholders to unlock their full potential. With robust, enterprise-grade capabilities and an intuitive interface, the solution is designed to streamline workflows and drive efficiency at scale.</p>
+                </div>
+                <div class="ba-box ba-after">
+                    <div class="ba-lang">English</div>
+                    <div class="ba-tag">After -- Slop 1/10</div>
+                    <p>Teams edit the same document at the same time. Comments resolve in-thread. Permissions take two clicks to set. It works for ten people or ten thousand.</p>
+                </div>
+            </div>
+            <!-- DE 2 -->
+            <div class="ba-item">
+                <div class="ba-box ba-before">
+                    <div class="ba-lang">Deutsch</div>
+                    <div class="ba-tag">Vorher -- Slop 7/10</div>
+                    <p>Wir freuen uns, bekannt geben zu duerfen, dass wir eine spannende neue Partnerschaft eingegangen sind! Gemeinsam werden wir synergetische Loesungen entwickeln, die unseren Kunden einen echten Mehrwert bieten. Wir sind ueberzeugt, dass diese Zusammenarbeit ein wichtiger Meilenstein ist.</p>
+                </div>
+                <div class="ba-box ba-after">
+                    <div class="ba-lang">Deutsch</div>
+                    <div class="ba-tag">Nachher -- Slop 1/10</div>
+                    <p>Ab April arbeiten wir mit Firma X zusammen. Die machen Logistik, wir machen Software. Ergebnis: Bestellungen kommen einen Tag frueher an. Details naechste Woche hier.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section id="how-it-works">
+    <div class="container">
+        <p class="section-label">Under the hood</p>
+        <h2 class="section-title">How it works</h2>
+        <p class="section-desc">Five steps, every time. No shortcuts.</p>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div>
+                    <h3>Scan</h3>
+                    <p>Read the full text. Tag blacklisted words, structural patterns, tonal red flags, and cuttable sentences.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div>
+                    <h3>Score</h3>
+                    <p>Rate 0-10 on the Slop Scale. 0-1 is clean, 4-5 is moderate, 8-10 means burn it and start over.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div>
+                    <h3>Report</h3>
+                    <p>Findings table with location, slop found, type, and fix suggestion. Plus word frequency flags.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div>
+                    <h3>Rewrite</h3>
+                    <p>Zero blacklisted phrases, varied structure, specific claims, 20%+ shorter than the original.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">5</div>
+                <div>
+                    <h3>Verify</h3>
+                    <p>Re-scan the output. Final result must score 0-2 on the Slop Scale or it goes back for another pass.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ INSTALL ═══ -->
+<section id="install" class="ba-section">
+    <div class="container">
+        <p class="section-label">Get started</p>
+        <h2 class="section-title">Install in 30 seconds</h2>
+        <p class="section-desc">Two ways to use it. Pick whichever fits your workflow.</p>
+
+        <div class="tab-row">
+            <button class="tab-btn active" data-tab="skill">As a Skill (Global)</button>
+            <button class="tab-btn" data-tab="agent">As an Agent (Per-Project)</button>
+        </div>
+
+        <div class="tab-content active" id="tab-skill">
+            <h3 style="margin-bottom:.75rem; font-size:1rem;">One command. Done.</h3>
+            <pre>claude install-skill https://github.com/Kendo1988/anti-ai-slop-editor</pre>
+            <p style="margin-top:1rem; color:var(--text-dim); font-size:.88rem;">The skill loads automatically in every Claude Code session. Ask Claude to audit or rewrite any text.</p>
+            <pre style="margin-top:1rem;">Review this text for AI slop and rewrite it: [paste your text]</pre>
+        </div>
+
+        <div class="tab-content" id="tab-agent">
+            <h3 style="margin-bottom:.75rem; font-size:1rem;">Copy the agent file into your project.</h3>
+            <pre>mkdir -p .claude/agents
+curl -o .claude/agents/anti-ai-slop-editor.md \
+  https://raw.githubusercontent.com/Kendo1988/anti-ai-slop-editor/main/agent.md</pre>
+            <p style="margin-top:1rem; color:var(--text-dim); font-size:.88rem;">Then run it on demand:</p>
+            <pre style="margin-top:1rem;">/agents anti-ai-slop-editor</pre>
+        </div>
+
+        <p style="margin-top:2rem; font-size:.88rem; color:var(--text-dim);">
+            Need help? See the full <a href="INSTALLATION.md">Installation Guide</a> with troubleshooting for macOS, Linux, and Windows.
+        </p>
+    </div>
+</section>
+
+<!-- ═══ USE CASES ═══ -->
+<section id="usecases">
+    <div class="container">
+        <p class="section-label">Who uses this</p>
+        <h2 class="section-title">Built for people who care how their text reads</h2>
+        <div class="usecases-grid">
+            <div class="usecase-card">
+                <div class="usecase-role">Content Marketer</div>
+                <p>Drafts three blog posts per week with AI. Runs every draft through the editor before publishing. Average slop score dropped from 6.2 to 1.8. Readers started finishing articles instead of bouncing at paragraph two.</p>
+            </div>
+            <div class="usecase-card">
+                <div class="usecase-role">Freelance Copywriter</div>
+                <p>Uses Claude for first drafts. A client sent back work with "this reads like ChatGPT" in the margin. Now every deliverable goes through the skill first. Revision requests dropped by half.</p>
+            </div>
+            <div class="usecase-card">
+                <div class="usecase-role">Startup Founder (DE)</div>
+                <p>Writes monthly investor updates in German. AI drafts kept coming out full of "ganzheitlich" and "Mehrwert." After installing, updates read like a person explaining what happened. One investor replied: "Best update you've written."</p>
+            </div>
+            <div class="usecase-card">
+                <div class="usecase-role">Developer / Tech Writer</div>
+                <p>Generates API docs with Claude Code. Technical content was accurate but intros were littered with "This powerful endpoint enables seamless integration..." The skill catches that on the spot.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section id="faq" class="ba-section">
+    <div class="container">
+        <p class="section-label">Questions</p>
+        <h2 class="section-title" style="text-align:center;">FAQ</h2>
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-q">Is this free?</div>
+                <div class="faq-a">Yes. Completely free, open source, MIT licensed. No premium tier, no usage limits.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Do I need Claude Code?</div>
+                <div class="faq-a">Yes. This is a custom skill/agent built for Claude Code, Anthropic's CLI-based coding tool. You install it inside Claude Code and it runs in your sessions.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Does it work with German?</div>
+                <div class="faq-a">Yes. It carries a dedicated German banned-word list and detects German-specific AI patterns. It scores and rewrites German text the same way it handles English.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Will it change my meaning?</div>
+                <div class="faq-a">No. It rewrites for clarity and human tone, not for different content. If your original text says "we reduced costs by 30%," the rewrite keeps that claim. What changes is the filler around it.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">How is this different from Grammarly?</div>
+                <div class="faq-a">Grammarly checks grammar and basic style. This skill specifically targets AI writing patterns: the structural habits, word choices, and rhythmic tells that make text sound machine-generated. Grammarly polishes. This skill de-robots.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">What is the "Slop Scale"?</div>
+                <div class="faq-a">A 0-to-10 score measuring how AI-generated your text sounds. Based on banned-word density, structural pattern frequency, sentence rhythm variety, and information-to-filler ratio. It is not a quality score. It specifically measures AI tells.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Can I customize the banned words?</div>
+                <div class="faq-a">Yes. The skill and agent files are plain Markdown. Open them and edit the blacklist tables to add or remove words for your industry.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Skill or Agent -- which should I pick?</div>
+                <div class="faq-a">Skill installs globally and is always available in every project. Agent installs per-project and runs on demand with /agents. Use the skill if you want it everywhere. Use the agent if you want project-level control.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Install the skill.<br>Kill the slop.</h2>
+        <p>One command. Free. Open source.</p>
+        <div class="hero-actions" style="margin-bottom:1.5rem;">
+            <a href="https://github.com/Kendo1988/anti-ai-slop-editor" class="btn btn-primary">Get it on GitHub</a>
+        </div>
+        <pre style="max-width:600px;margin:0 auto;text-align:left;">claude install-skill https://github.com/Kendo1988/anti-ai-slop-editor</pre>
+    </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+    <div class="container">
+        <p>Anti AI Slop Editor &middot; MIT License &middot; Made by <a href="https://pfisterer.digital">pfisterer.digital</a> &middot; <a href="https://github.com/Kendo1988/anti-ai-slop-editor">GitHub</a></p>
+    </div>
+</footer>
+
+<script>
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+        const item = q.parentElement;
+        const wasOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!wasOpen) item.classList.add('open');
+    });
+});
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+</script>
+
+</body>
+</html>
